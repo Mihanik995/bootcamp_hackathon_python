@@ -26,6 +26,9 @@ class Film:
                 f"IMDb rating - {self.rating}\n"
                 f"{'Viewed' if self.viewed else 'Not viewed'}")
 
+    def __eq__(self, other):
+        return self.id == other.id and isinstance(other, Film)
+
     @classmethod
     def get(cls, id):
         response = execute_query(f"select * from films where id={id}")
