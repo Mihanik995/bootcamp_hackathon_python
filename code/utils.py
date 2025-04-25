@@ -48,10 +48,15 @@ def get_film_by_api(search_request):
                                         "apikey": os.getenv('OMDB_API_KEY')
                                     })
             new_response = new_response.json()
-            return {'title': new_response['Title'],
+            result = {'title': new_response['Title'],
                     'year': new_response['Year'],
                     'description': new_response['Plot'],
                     'genre': new_response['Genre'],
                     'rating': new_response['imdbRating']}
+            for key, value in result.items():
+                if isinstance(value, str):
+                    result[key] = value.replace('\'', '\'\'')
+            return result
+
         except ValueError:
             print('I need a number')

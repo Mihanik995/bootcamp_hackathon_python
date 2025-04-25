@@ -16,6 +16,8 @@ class Film:
 
         self.id = self.save()
 
+        self.create_backup()
+
     def __repr__(self):
         return f"{self.id}. {self.title}, {self.year} - {self.genre}."
 
@@ -42,7 +44,7 @@ class Film:
         return cls(**get_film_by_api(title))
 
     def save(self):
-        if not execute_query(f"select * from films where description = '{self.description}'"):
+        if not execute_query(f"select * from films where title='{self.title}' and year='{self.year}'"):
             execute_query('insert into films(title, description, genre, year, rating) '
                           f"values ('{self.title}', '{self.description}', '{self.genre}', '{self.year}', {self.rating})")
         return execute_query(f"select id from films where title = '{self.title}'")[0][0]
