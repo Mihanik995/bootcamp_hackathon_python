@@ -1,8 +1,8 @@
-from utils import execute_query
+from utils import execute_query, get_film_by_api
 
 class Film:
-    def __init__(self, title: str, description: str, genre: str, year: int, rating: float):
-        execute_query('create table if not exists film (id serial primary key, title varchar(50), description text, genre varchar(30), year smallint, rating float)')
+    def __init__(self, title: str, description: str, genre: str, year: str, rating: float):
+        execute_query('create table if not exists films (id serial primary key, title varchar(50), description text, genre varchar(30), year varchar(10), rating float)')
 
         self.title = title
         self.description = description
@@ -18,11 +18,15 @@ class Film:
         if response:
             return cls(response[0][1], response[0][2], response[0][3], response[0][4], response[0][5])
 
+    @classmethod
+    def add_by_api(cls, title):
+        return cls(**get_film_by_api(title))
+
 
     def save(self):
         if not execute_query(f"select * from film where title = '{self.title}'"):
             execute_query('insert into film(title, description, genre, year, rating) '
-                          f"values ('{self.title}', '{self.description}', '{self.genre}', {self.year}, {self.rating})")
+                          f"values ('{self.title}', '{self.description}', '{self.genre}', '{self.year}', {self.rating})")
         return execute_query(f"select id from film where title = '{self.title}'")[0][0]
 
 
@@ -32,7 +36,7 @@ class Film:
             self.id = self.save()
         execute_query(f"update menu_items "
                       f"set title = '{title}', description = '{description}', genre = '{genre}', "
-                      f"year = {year}, rating = {rating} where item_id = '{self.id}'")
+                      f"year = '{year}', rating = {rating} where item_id = '{self.id}'")
 
     def delete(self):
         if execute_query(f"select * from film where id = {self.id}"):
