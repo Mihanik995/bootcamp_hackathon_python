@@ -1,8 +1,12 @@
+import json
+
 from utils import execute_query, get_film_by_api
+
 
 class Film:
     def __init__(self, title: str, description: str, genre: str, year: str, rating: float):
-        execute_query('create table if not exists films (id serial primary key, title varchar(50), description text, genre varchar(30), year varchar(10), rating float)')
+        execute_query(
+            'create table if not exists films (id serial primary key, title varchar(50), description text, genre varchar(30), year varchar(10), rating float)')
 
         self.title = title
         self.description = description
@@ -14,30 +18,55 @@ class Film:
 
     @classmethod
     def get(cls, id):
-        response = execute_query(f"select * from film where id={id}")
+        response = execute_query(f"select * from films where id={id}")
         if response:
             return cls(response[0][1], response[0][2], response[0][3], response[0][4], response[0][5])
+
+    @classmethod
+    def all(cls):
+        response = execute_query(f"select * from films")
+        if response:
+            result = []
+            for row in response:
+                result.append(cls(row[1], row[2], row[3], row[4], row[5]))
+            return result
 
     @classmethod
     def add_by_api(cls, title):
         return cls(**get_film_by_api(title))
 
-
     def save(self):
-        if not execute_query(f"select * from film where title = '{self.title}'"):
-            execute_query('insert into film(title, description, genre, year, rating) '
+        if not execute_query(f"select * from films where title = '{self.title}, description = '{self.description}'"):
+            execute_query('insert into films(title, description, genre, year, rating) '
                           f"values ('{self.title}', '{self.description}', '{self.genre}', '{self.year}', {self.rating})")
-        return execute_query(f"select id from film where title = '{self.title}'")[0][0]
-
-
+        return execute_query(f"select id from films where title = '{self.title}'")[0][0]
 
     def update(self, title: str, description: str, genre: str, year: int, rating: float):
-        if not execute_query(f"select * from film where id = {self.id}"):
+        if not execute_query(f"select * from films where id = {self.id}"):
             self.id = self.save()
-        execute_query(f"update menu_items "
+        execute_query(f"update films "
                       f"set title = '{title}', description = '{description}', genre = '{genre}', "
                       f"year = '{year}', rating = {rating} where item_id = '{self.id}'")
 
     def delete(self):
-        if execute_query(f"select * from film where id = {self.id}"):
-            execute_query(f"delete from film where id = {self.id}")
+        if execute_query(f"select * from films where id = {self.id}"):
+            execute_query(f"delete from films where id = {self.id}")
+
+    @staticmethod
+    def create_backup():
+        with open('films_backup.json', 'w') as file:
+            film_list = []
+            for film in Film.all():
+                film_list.append({'title': film.title,
+                                  'description': film.description,
+                                  'genre': film.genre,
+                                  'year': film.year,
+                                  'rating': film.rating})
+            json.dump(film_list, file)
+
+    @staticmethod
+    def load_from_backup():
+        with open('films_backup.json', 'r') as file:
+            film_list = json.load(file)
+            for film in film_list:
+                Film(**film)
