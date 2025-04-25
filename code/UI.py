@@ -67,6 +67,7 @@ def ui() -> bool:
                         print('Invalid input')
                         return True
                     Film.get(user_input).change_viewed()
+                    Film.create_backup()
                     print(f'Movie "{Film.get(user_input).title}" marked as viewed')
                 except ValueError:
                     print('I need a number')
