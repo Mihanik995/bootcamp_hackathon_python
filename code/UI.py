@@ -1,10 +1,12 @@
 from code.models import Film
 
 action_options = """
-1. View movies list
-2. Add new movie
-3. Delete a movie
-4. Restore movies list from backup
+1. Show all movies list
+2. Show not viewed movies list
+3. Add new movie
+4. Delete a movie
+5. Mark movie as viewed
+6. Restore movies list from backup
 
 0. Quit
 """
@@ -24,15 +26,22 @@ def ui() -> bool:
         case 1:
             if Film.all():
                 for film in Film.all():
-                    print(film)
                     print()
+                    print(film)
             else:
                 print('No movies found')
         case 2:
+            if Film.all(not_viewed_only=True):
+                for film in Film.all(not_viewed_only=True):
+                    print()
+                    print(film)
+            else:
+                print('No movies found')
+        case 3:
             Film.add_by_api(input('Enter movie title: '))
             Film.create_backup()
             print('Movie added')
-        case 3:
+        case 4:
             if Film.all():
                 for film in Film.all():
                     print(film.__repr__())
@@ -48,7 +57,22 @@ def ui() -> bool:
                     print('I need a number')
             else:
                 print('No movies found')
-        case 4:
+        case 5:
+            if Film.all():
+                for film in Film.all():
+                    print(film.__repr__())
+                try:
+                    user_input = int(input('Choose a movie: '))
+                    if user_input not in [film.id for film in Film.all()]:
+                        print('Invalid input')
+                        return True
+                    Film.get(user_input).change_viewed()
+                    print(f'Movie "{Film.get(user_input).title}" marked as viewed')
+                except ValueError:
+                    print('I need a number')
+            else:
+                print('No movies found')
+        case 6:
             Film.load_from_backup()
             print('Movies loaded')
         case _:
