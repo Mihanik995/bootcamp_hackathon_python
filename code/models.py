@@ -33,8 +33,8 @@ class Film:
             return cls(response[0][1], response[0][2], response[0][3], response[0][4], response[0][5], response[0][6])
 
     @classmethod
-    def all(cls):
-        response = execute_query(f"select * from films order by id")
+    def all(cls, not_viewed_only=False):
+        response = execute_query(f"select * from films{' where viewed = false' if not_viewed_only else ''} order by id")
         if response:
             result = []
             for row in response:
@@ -62,7 +62,8 @@ class Film:
             self.id = self.save()
         execute_query(f"update films "
                       f"set title = '{title if title else self.title}', "
-                      f"description = '{description if description else self.description}', "
+                      f"description = '{description.replace('\'', '\'\'') if description
+                      else self.description.replace('\'', '\'\'')}', "
                       f"genre = '{genre if genre else self.genre}', "
                       f"year = '{year if year else self.year}', "
                       f"rating = {rating if rating else self.rating}, "
@@ -88,7 +89,8 @@ class Film:
                                       'description': film.description,
                                       'genre': film.genre,
                                       'year': film.year,
-                                      'rating': film.rating})
+                                      'rating': film.rating,
+                                      'viewed': film.viewed})
             json.dump(film_list, file)
 
     @staticmethod
