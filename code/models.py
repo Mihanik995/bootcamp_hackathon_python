@@ -77,4 +77,7 @@ class Film:
         with open('films_backup.json', 'r') as file:
             film_list = json.load(file)
             for film in film_list:
+                for key, value in film.items():
+                    if isinstance(value, str):
+                        film[key] = value.replace('\'', '\'\'')
                 Film(**film)

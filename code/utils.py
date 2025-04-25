@@ -57,6 +57,5 @@ def get_film_by_api(search_request):
                 if isinstance(value, str):
                     result[key] = value.replace('\'', '\'\'')
             return result
-
         except ValueError:
             print('I need a number')
