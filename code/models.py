@@ -1,6 +1,6 @@
 import json
 
-from utils import execute_query, get_film_by_api
+from code.utils import execute_query, get_film_by_api
 
 
 class Film:
@@ -15,6 +15,12 @@ class Film:
         self.rating = rating
 
         self.id = self.save()
+
+    def __repr__(self):
+        return f"{self.id}. {self.title}, {self.year} - {self.genre}."
+
+    def __str__(self):
+        return f"{self.id}. {self.title}, {self.year} - {self.genre}.\n{self.description}\nIMDb rating - {self.rating}"
 
     @classmethod
     def get(cls, id):
@@ -36,7 +42,7 @@ class Film:
         return cls(**get_film_by_api(title))
 
     def save(self):
-        if not execute_query(f"select * from films where title = '{self.title}, description = '{self.description}'"):
+        if not execute_query(f"select * from films where description = '{self.description}'"):
             execute_query('insert into films(title, description, genre, year, rating) '
                           f"values ('{self.title}', '{self.description}', '{self.genre}', '{self.year}', {self.rating})")
         return execute_query(f"select id from films where title = '{self.title}'")[0][0]
