@@ -6,7 +6,8 @@ from code.utils import execute_query, get_film_by_api
 class Film:
     def __init__(self, title: str, description: str, genre: str, year: str, rating: float):
         execute_query(
-            'create table if not exists films (id serial primary key, title varchar(50), description text, genre varchar(30), year varchar(10), rating float)')
+            'create table if not exists films (id serial primary key, title varchar(50), description text, '
+            'genre varchar(30), year varchar(15), rating float)')
 
         self.title = title
         self.description = description
@@ -15,8 +16,6 @@ class Film:
         self.rating = rating
 
         self.id = self.save()
-
-        self.create_backup()
 
     def __repr__(self):
         return f"{self.id}. {self.title}, {self.year} - {self.genre}."
@@ -44,7 +43,7 @@ class Film:
         return cls(**get_film_by_api(title))
 
     def save(self):
-        if not execute_query(f"select * from films where title='{self.title}' and year='{self.year}'"):
+        if not execute_query(f"select * from films where title='{self.title}'"):
             execute_query('insert into films(title, description, genre, year, rating) '
                           f"values ('{self.title}', '{self.description}', '{self.genre}', '{self.year}', {self.rating})")
         return execute_query(f"select id from films where title = '{self.title}'")[0][0]
@@ -64,12 +63,13 @@ class Film:
     def create_backup():
         with open('films_backup.json', 'w') as file:
             film_list = []
-            for film in Film.all():
-                film_list.append({'title': film.title,
-                                  'description': film.description,
-                                  'genre': film.genre,
-                                  'year': film.year,
-                                  'rating': film.rating})
+            if Film.all():
+                for film in Film.all():
+                    film_list.append({'title': film.title,
+                                      'description': film.description,
+                                      'genre': film.genre,
+                                      'year': film.year,
+                                      'rating': film.rating})
             json.dump(film_list, file)
 
     @staticmethod
