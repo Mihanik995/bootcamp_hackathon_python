@@ -7,7 +7,7 @@ class Film:
     def __init__(self, title: str, description: str, genre: str, year: str, rating: float):
         execute_query(
             'create table if not exists films (id serial primary key, title varchar(50), description text, '
-            'genre varchar(30), year varchar(15), rating float)')
+            'genre varchar(30), year varchar(15), rating float, viewed bool default false)')
 
         self.title = title
         self.description = description
@@ -16,6 +16,7 @@ class Film:
         self.rating = rating
 
         self.id = self.save()
+        self.viewed = False
 
     def __repr__(self):
         return f"{self.id}. {self.title}, {self.year} - {self.genre}."
@@ -48,16 +49,22 @@ class Film:
                           f"values ('{self.title}', '{self.description}', '{self.genre}', '{self.year}', {self.rating})")
         return execute_query(f"select id from films where title = '{self.title}'")[0][0]
 
-    def update(self, title: str, description: str, genre: str, year: int, rating: float):
+    def update(self, title: str, description: str, genre: str, year: str, rating: float, viewed: bool):
         if not execute_query(f"select * from films where id = {self.id}"):
             self.id = self.save()
         execute_query(f"update films "
                       f"set title = '{title}', description = '{description}', genre = '{genre}', "
-                      f"year = '{year}', rating = {rating} where item_id = '{self.id}'")
+                      f"year = '{year}', rating = {rating}, viewed={viewed} where item_id = '{self.id}'")
 
     def delete(self):
         if execute_query(f"select * from films where id = {self.id}"):
             execute_query(f"delete from films where id = {self.id}")
+
+    def change_viewed(self):
+        if not execute_query(f"select * from films where id = {self.id}"):
+            self.save()
+        self.viewed = True if not self.viewed else False
+        self.update(self.title, self.description, self.genre, self.year, self.rating, self.viewed)
 
     @staticmethod
     def create_backup():
