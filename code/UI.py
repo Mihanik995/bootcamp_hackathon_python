@@ -7,6 +7,7 @@ action_options = """
 4. Delete a movie
 5. Mark movie as viewed
 6. Restore movies list from backup
+7. Show statistics
 
 0. Quit
 """
@@ -58,7 +59,7 @@ def ui() -> bool:
             else:
                 print('No movies found')
         case 5:
-            if Film.all():
+            if Film.all(not_viewed_only=True):
                 for film in Film.all():
                     print(film.__repr__())
                 try:
@@ -76,6 +77,8 @@ def ui() -> bool:
         case 6:
             Film.load_from_backup()
             print('Movies loaded')
+        case 7:
+            Film.show_statistics()
         case _:
             print('I didn\'t get your input')
     return True
