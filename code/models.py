@@ -36,8 +36,15 @@ class Film:
             return cls(response[0][1], response[0][2], response[0][3], response[0][4], response[0][5], response[0][6])
 
     @classmethod
-    def all(cls, not_viewed_only=False):
-        response = execute_query(f"select * from films{' where viewed = false' if not_viewed_only else ''} order by id")
+    def all(cls, viewed_only = False, not_viewed_only=False):
+        if viewed_only and not_viewed_only:
+            raise ValueError("Both 'viewed_only' and 'not_viewed_only' cannot be True at the same time.")
+        query = "select * from films"
+        if viewed_only:
+            query += " where viewed = true"
+        elif not_viewed_only:
+            query += " where viewed = false"
+        response = execute_query(query + " order by id")
         if response:
             result = []
             for row in response:
@@ -81,6 +88,33 @@ class Film:
             self.save()
         self.viewed = True
         self.update(viewed=self.viewed)
+
+    @staticmethod
+    def show_statistics():
+        films = Film.all(viewed_only=True)
+        genres_viewed = dict()
+        for film in films:
+            genres = film.genre.split(', ')
+            for genre in genres:
+                if genre in genres_viewed.keys():
+                    genres_viewed[genre] += 1
+                else:
+                    genres_viewed[genre] = 1
+
+        max_viewed = 0
+        for count in genres_viewed.values():
+            if count > max_viewed:
+                max_viewed = count
+
+        genres_most_viewed = []
+        for genre in genres_viewed.keys():
+            if genres_viewed[genre] == max_viewed:
+                genres_most_viewed.append(genre)
+
+        print(f"You have viewed {len(films)} movies.\n"
+              f"Most viewed genres: {', '.join(genres_most_viewed)}\n")
+
+
 
     @staticmethod
     def create_backup():
