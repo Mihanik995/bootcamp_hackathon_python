@@ -60,7 +60,7 @@ def ui() -> bool:
                 print('No movies found')
         case 5:
             if Film.all(not_viewed_only=True):
-                for film in Film.all():
+                for film in Film.all(not_viewed_only=True):
                     print(film.__repr__())
                 try:
                     user_input = int(input('Choose a movie: '))
